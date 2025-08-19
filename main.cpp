@@ -25,16 +25,225 @@ void Start();
 void Update();
 bool endApp = false;
 
-std::string currentRow = "0";
-std::string newRow;
 const double PI = 3.141592653589793;
-float moveChange = 5.0f;
-float angleChange = PI / 180 * 45;
 
-std::map<char, std::string> rules =
+struct Lsystem
 {
-    {'0',"1[0]0"},
-    {'1',"11"}
+    float moveChange;
+    float angleChange;
+    std::string row;
+    std::map<char, std::string> rules;
+    std::map<char, std::string> actionMap;
+};
+
+Lsystem binaryTree =
+{
+    5.0f,
+    PI / 180.0f * 45.0f,
+    "0",
+    {
+        {'0',"1[0]0"},
+        {'1',"11"}
+    },
+    {
+        {'0',"F"},
+        {'1',"F"},
+        {'[',"S-"},
+        {']',"R+"},
+    }
+};
+
+Lsystem quadraticType1Curve = 
+{
+    25.0f,
+    PI / 180.0f * 90.0f,
+    "F",
+    {
+        {'F',"F+F-F-F+F"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem kochSnowflake = 
+{
+    1.0f,
+    PI / 180.0f * 60.0f,
+    "F--F--F",
+    {
+        {'F',"F+F--F+F"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem peanoCurve = 
+{
+    5.0f,
+    PI / 180.0f * 90.0f,
+    "X",
+    {
+        {'X',"XFYFX+F+YFXFY-F-XFYFX"},
+        {'Y',"YFXFY-F-XFYFX+F+YFXFY"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem peanoCurve2 = 
+{
+    5.0f,
+    PI / 180.0f * 90.0f,
+    "F",
+    {
+        {'F',"F+F-F-FF-F-F-FF"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem hilbertCurve =
+{
+    25.0f,
+    PI / 180.0f * 90.0f,
+    "A",
+    {
+        {'A',"+BF-AFA-FB+"},
+        {'B',"-AF+BFB+FA-"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem sierpinskiCurve =
+{
+    5.0f,
+    PI / 180.0f * 45.0f,
+    "F--XF--F--XF",
+    {
+        {'X',"XF+G+XF--F--XF+G+X"},
+    },
+    {
+        {'F',"F"},
+        {'G',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem sierpinskiCurve2 =
+{
+    5.0f,
+    PI / 180.0f * 90.0f,
+    "F+XF+F+XF",
+    {
+        {'X',"XF-F+F-XF+F+XF-F+F-X"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem sierpinskiArrowheadCurve =
+{
+    5.0f,
+    PI / 180.0f * 60.0f,
+    "XF",
+    {
+        {'X',"YF+XF+Y"},
+        {'Y',"XF-YF-X"},
+    },
+    {
+        {'F',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem sierpinskiTriangle =
+{
+    25.0f,
+    PI / 180.0f * 120.0f,
+    "F-G-G",
+    {
+        {'F',"F-G+F+G-F"},
+        {'G',"GG"}
+    },
+    {
+        {'F',"F"},
+        {'G',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem sierpinskiTriangleApprox =
+{
+    10.0f,
+    PI / 180.0f * 60.0f,
+    "A",
+    {
+        {'A',"B-A-B"},
+        {'B',"A+B+A"}
+    },
+    {
+        {'A',"F"},
+        {'B',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem dragonCurve =
+{
+    10.0f,
+    PI / 180.0f * 90.0f,
+    "F",
+    {
+        {'F',"F+G"},
+        {'G',"F-G"}
+    },
+    {
+        {'F',"F"},
+        {'G',"F"},
+        {'+',"+"},
+        {'-',"-"},
+    }
+};
+
+Lsystem fractalPlant =
+{
+    4.0f,
+    PI / 180.0f * 25.0f,
+    "-X",
+    {
+        {'X',"F+[[X]-X]-F[-FX]+X"},
+        {'F',"FF"}
+    },
+    {
+        {'F',"F"},
+        {'[',"S"},
+        {']',"R"},
+        {'+',"+"},
+        {'-',"-"},
+    }
 };
 
 struct Transformation
@@ -43,75 +252,92 @@ struct Transformation
     bool draw = true;
 };
 
-std::string Iteration(std::map<char, std::string> rules, std::string currentRow, int interationRound = 1)
+std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string currentRow = "")
 {
+    if(currentRow == "")
+    {
+        currentRow = lsys->row;
+    }
     std::string resultRow = "";
     for(int i = 0; i < currentRow.length(); i++)
     {
-        std::string s = rules[currentRow[i]];
+        std::string s = lsys->rules[currentRow[i]];
         if (s == "")
         {
             s = currentRow[i];
         }
         resultRow += s;
     }
-    if(interationRound > 1)
+    if(iterationRound > 1)
     {
-        return Iteration(rules, resultRow, interationRound - 1);
+        return Iteration(lsys, iterationRound - 1, resultRow);
     }
     return resultRow;
 }
 
-std::vector<Transformation> DrawIteration(std::string row)
+std::vector<Transformation> DrawIteration(Lsystem *lsys, int iterations)
 {
-    std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth,-PI / 2}};
-    std::vector<Transformation> splits;
+    std::string row = Iteration(lsys, iterations);
+    std::string actionRow = "";
     for(int i = 0; i < row.length(); i++)
     {
-        switch (row[i])
+        actionRow.append(lsys->actionMap[row[i]]);
+    }
+    std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth / 2, -PI / 2}};
+    std::vector<Transformation> splits;
+    for(int i = 0; i < actionRow.length(); i++)
+    {
+        switch(actionRow[i])
         {
-            case '0':
+            case 'X':
+            {
+                break;
+            }
+            case 'F':
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.posX += cos(t.angle) * moveChange;
-                t.posY += sin(t.angle) * moveChange;
+                t.posX += cos(t.angle) * lsys->moveChange;
+                t.posY += sin(t.angle) * lsys->moveChange;
                 transformations.push_back(t);
                 break;
             }
-            case '1':
-            {
-                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.posX += cos(t.angle) * moveChange;
-                t.posY += sin(t.angle) * moveChange;
-                transformations.push_back(t);
-                break;
-            }
-            case '[':
+            case 'S':
             {
                 splits.push_back(transformations[transformations.size() - 1]);
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle += angleChange;
                 transformations.push_back(t);
                 break;
             }
-            case ']':
+            case 'R':
             {
                 Transformation t = {splits[splits.size() - 1].posX,splits[splits.size() - 1].posY,splits[splits.size() - 1].angle, false};
-                t.angle -= angleChange;
                 transformations.push_back(t);
                 splits.pop_back();
                 break;
             }
+            case '+':
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.angle -= lsys->angleChange;
+                transformations.push_back(t);
+                break;
+            }
+            case '-':
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.angle += lsys->angleChange;
+                transformations.push_back(t);
+                break;
+            }
             default:
             {
-                std::cout << "ERROR!" << std::endl;
+                std::cout << "ERROR in Draw Iteration with symbol: " << actionRow[i] << std::endl;
                 break;
             }
         }
     }
     return transformations;
 }
-
 
 bool createWindow()
 {
@@ -221,8 +447,8 @@ void QuitApplication(){
 
 void Start()
 {
-    newRow = Iteration(rules,currentRow,5);
-    RenderFrame(DrawIteration(newRow));
+    //RenderFrame(DrawIterationBinaryTree(&binaryTree,7));
+    RenderFrame(DrawIteration(&peanoCurve,5));
 }
 
 void Update()
