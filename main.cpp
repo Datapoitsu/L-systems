@@ -14,6 +14,9 @@
 //SDL2
 #include <SDL2/SDL.h>
 
+//My library.
+#include <tools/input.h>
+
 SDL_Window *Window;
 SDL_Renderer *RenderInformation;
 const int screenWidth = 1000;
@@ -36,214 +39,466 @@ struct Lsystem
     std::map<char, std::string> actionMap;
 };
 
-Lsystem binaryTree =
+std::vector<Lsystem> lsysVec
 {
-    5.0f,
-    PI / 180.0f * 45.0f,
-    "0",
     {
-        {'0',"1[0]0"},
-        {'1',"11"}
+        "binaryTree",
+        5.0f,
+        45.0f,
+        "0",
+        {
+            {'0',"1[0]0"},
+            {'1',"11"}
+        },
+        {
+            {'0',"F"},
+            {'1',"F"},
+            {'[',"S-"},
+            {']',"R+"},
+        }
     },
     {
-        {'0',"F"},
-        {'1',"F"},
-        {'[',"S-"},
-        {']',"R+"},
-    }
-};
+        "quadraticType1Curve",
+        25.0f,
+        90.0f,
+        "F",
+        {
+            {'F',"F+F-F-F+F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "kochSnowflake",
+        1.0f,
+        60.0f,
+        "F--F--F",
+        {
+            {'F',"F+F--F+F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "iceFractal",
+        5.0f,
+        90.0f,
+        "F+F+F+F",
+        {
+            {'F',"FF+F++F+F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+        }
+    },
+    {
+        "gosperCurve",
+        5.0f,
+        60.0f,
+        "XF",
+        {
+            {'X',"X+YF++YF-FX--FXFX-YF+"},
+            {'Y',"-FX+YFYF++YF+FX--FX-Y"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "peanoCurve",
+        5.0f,
+        90.0f,
+        "X",
+        {
+            {'X',"XFYFX+F+YFXFY-F-XFYFX"},
+            {'Y',"YFXFY-F-XFYFX+F+YFXFY"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "peanoCurve2",
+        5.0f,
+        90.0f,
+        "F",
+        {
+            {'F',"F+F-F-FF-F-F-FF"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "hilbertCurve",
+        25.0f,
+        90.0f,
+        "A",
+        {
+            {'A',"+BF-AFA-FB+"},
+            {'B',"-AF+BFB+FA-"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "sierpinskiCurve",
+        5.0f,
+        45.0f,
+        "F--XF--F--XF",
+        {
+            {'X',"XF+G+XF--F--XF+G+X"},
+        },
+        {
+            {'F',"F"},
+            {'G',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "sierpinskiCurve2",
+        5.0f,
+        90.0f,
+        "F+XF+F+XF",
+        {
+            {'X',"XF-F+F-XF+F+XF-F+F-X"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "sierpinskiArrowheadCurve",
+        5.0f,
+        60.0f,
+        "XF",
+        {
+            {'X',"YF+XF+Y"},
+            {'Y',"XF-YF-X"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "sierpinskiTriangle",
+        25.0f,
+        120.0f,
+        "F-G-G",
+        {
+            {'F',"F-G+F+G-F"},
+            {'G',"GG"}
+        },
+        {
+            {'F',"F"},
+            {'G',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "sierpinskiTriangleApprox",
+        10.0f,
+        60.0f,
+        "A",
+        {
+            {'A',"B-A-B"},
+            {'B',"A+B+A"}
+        },
+        {
+            {'A',"F"},
+            {'B',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "gilbertCurve",
+        10.0f,
+        90.0f,
+        "X",
+        {
+            {'X',"-YF+XFX+FY-"},
+            {'Y',"+XF-YFY-FX+"}
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "dragonCurve",
+        10.0f,
+        90.0f,
+        "F",
+        {
+            {'F',"F+G"},
+            {'G',"F-G"}
+        },
+        {
+            {'F',"F"},
+            {'G',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "levyCurve",
+        10.0f,
+        45.0f,
+        "F++F++F++F",
+        {
+            {'F',"-F++F-"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "pentaplexity",
+        5.0f,
+        36.0f,
+        "F++F++F++F++F",
+        {
+            {'F',"F++F++F+++++F-F++F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "pentigree",
+        5.0f,
+        72.0f,
+        "F-F-F-F-F",
+        {
+            {'F',"F-F++F+F-F-F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "fractalPlant",
+        4.0f,
+        25.0f,
+        "-X",
+        {
+            {'X',"F+[[X]-X]-F[-FX]+X"},
+            {'F',"FF"}
+        },
+        {
+            {'F',"F"},
+            {'[',"S"},
+            {']',"R"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "hex7b",
+        4.0f,
+        30.0f,
+        "X",
+        {
+            {'X',"-F++F-X-F--F+Y---F--F+Y+F++F-X+++F++F-X-F++F-X+++F--F+Y--"},
+            {'Y',"+F++F-X-F--F+Y+F--F+Y---F--F+Y---F++F-X+++F++F-X+++F--F+Y"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "doily",
+        5.0f,
+        30.0f,
+        "F--F--F--F--F--F",
+        {
+            {'F',"-F[--F--F]++F--F+"},
+        },
+        {
+            {'F',"F"},
+            {'[',"S"},
+            {']',"R"},
+            {'+',"+"},
+            {'-',"-"},
+        }
+    },
+    {
+        "maze01",
+        5.0f,
+        120.0f,
+        "F+F+F",
+        {
+            {'F',"F+FF-F"},
+        },
+        {
+            {'F',"F"},
 
-Lsystem quadraticType1Curve = 
-{
-    25.0f,
-    PI / 180.0f * 90.0f,
-    "F",
-    {
-        {'F',"F+F-F-F+F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem kochSnowflake = 
-{
-    1.0f,
-    PI / 180.0f * 60.0f,
-    "F--F--F",
-    {
-        {'F',"F+F--F+F"},
+        "sierpinskiCarpet",
+        4.0f,
+        90.0f,
+        "F",
+        {
+            {'F',"FFF[+FFF+FFF+FFF]"},
+        },
+        {
+            {'F',"F"},
+            {'[',"S"},
+            {']',"R"},
+            {'+',"+"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem peanoCurve = 
-{
-    5.0f,
-    PI / 180.0f * 90.0f,
-    "X",
-    {
-        {'X',"XFYFX+F+YFXFY-F-XFYFX"},
-        {'Y',"YFXFY-F-XFYFX+F+YFXFY"},
+        "Maze&Fractal1",
+        4.0f,
+        120.0f,
+        "X",
+        {
+            {'X',"FY+FYFY-FY"},
+            {'Y',"FX-FXFX+FX"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem peanoCurve2 = 
-{
-    5.0f,
-    PI / 180.0f * 90.0f,
-    "F",
-    {
-        {'F',"F+F-F-FF-F-F-FF"},
+        "Moore",
+        4.0f,
+        90.0f,
+        "X",
+        {
+            {'X',"FX+FX+FXFYFX+FXFY-FY-FY-"},
+            {'Y',"+FX+FX+FXFY-FYFXFY-FY-FY"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem hilbertCurve =
-{
-    25.0f,
-    PI / 180.0f * 90.0f,
-    "A",
-    {
-        {'A',"+BF-AFA-FB+"},
-        {'B',"-AF+BFB+FA-"},
+        "Pentant",
+        4.0f,
+        72.0f,
+        "X-X-X-X-X",
+        {
+            {'X',"FX-FX-FX+FY+FY+FX-FX"},
+            {'Y',"FY+FY-FX-FX-FY+FY+FY"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem sierpinskiCurve =
-{
-    5.0f,
-    PI / 180.0f * 45.0f,
-    "F--XF--F--XF",
-    {
-        {'X',"XF+G+XF--F--XF+G+X"},
+        "Pentl",
+        4.0f,
+        72.0f,
+        "F-F-F-F-F",
+        {
+            {'F',"F-F-F++F+F-F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'G',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem sierpinskiCurve2 =
-{
-    5.0f,
-    PI / 180.0f * 90.0f,
-    "F+XF+F+XF",
-    {
-        {'X',"XF-F+F-XF+F+XF-F+F-X"},
+        "Tiling1",
+        4.0f,
+        60.0f,
+        "X",
+        {
+            {'X',"F-F-F+F+FX++F-F-F+F+FX--F-F-F+F+FX"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem sierpinskiArrowheadCurve =
-{
-    5.0f,
-    PI / 180.0f * 60.0f,
-    "XF",
-    {
-        {'X',"YF+XF+Y"},
-        {'Y',"XF-YF-X"},
+        "ADH231a",
+        4.0f,
+        45.0f,
+        "F++++F",
+        {
+            {'F',"F+F+F++++F+F+F"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem sierpinskiTriangle =
-{
-    25.0f,
-    PI / 180.0f * 120.0f,
-    "F-G-G",
-    {
-        {'F',"F-G+F+G-F"},
-        {'G',"GG"}
+        "ADH256a",
+        4.0f,
+        90.0f,
+        "F+F+F+F++F-F-F-F",
+        {
+            {'F',"F+F++F+FF"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
     {
-        {'F',"F"},
-        {'G',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem sierpinskiTriangleApprox =
-{
-    10.0f,
-    PI / 180.0f * 60.0f,
-    "A",
-    {
-        {'A',"B-A-B"},
-        {'B',"A+B+A"}
+        "ADH258a",
+        4.0f,
+        60.0f,
+        "F++F++F+++F--F--F",
+        {
+            {'F',"FF++F++F++FFF"},
+        },
+        {
+            {'F',"F"},
+            {'+',"+"},
+            {'-',"-"},
+        }
     },
-    {
-        {'A',"F"},
-        {'B',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem dragonCurve =
-{
-    10.0f,
-    PI / 180.0f * 90.0f,
-    "F",
-    {
-        {'F',"F+G"},
-        {'G',"F-G"}
-    },
-    {
-        {'F',"F"},
-        {'G',"F"},
-        {'+',"+"},
-        {'-',"-"},
-    }
-};
-
-Lsystem fractalPlant =
-{
-    4.0f,
-    PI / 180.0f * 25.0f,
-    "-X",
-    {
-        {'X',"F+[[X]-X]-F[-FX]+X"},
-        {'F',"FF"}
-    },
-    {
-        {'F',"F"},
-        {'[',"S"},
-        {']',"R"},
-        {'+',"+"},
-        {'-',"-"},
-    }
 };
 
 struct Transformation
@@ -275,7 +530,7 @@ std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string current
     return resultRow;
 }
 
-std::vector<Transformation> DrawIteration(Lsystem *lsys, int iterations)
+std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
 {
     std::string row = Iteration(lsys, iterations);
     std::string actionRow = "";
@@ -318,14 +573,14 @@ std::vector<Transformation> DrawIteration(Lsystem *lsys, int iterations)
             case '+':
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle -= lsys->angleChange;
+                t.angle -= PI / 180.0f * lsys->angleChange;
                 transformations.push_back(t);
                 break;
             }
             case '-':
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle += lsys->angleChange;
+                t.angle += PI / 180.0f * lsys->angleChange;
                 transformations.push_back(t);
                 break;
             }
@@ -361,6 +616,9 @@ void closeWindow()
     SDL_Quit();
 }
 
+float offsetX, offsetY = 0;
+float offsetSpeed = 50.0f;
+
 void RenderFrame(std::vector<Transformation> lines)
 {
     // ----- Draw background ----- //
@@ -372,7 +630,7 @@ void RenderFrame(std::vector<Transformation> lines)
     {
         if(lines[i].draw)
         {
-            SDL_RenderDrawLine(RenderInformation,lines[i-1].posX,lines[i-1].posY,lines[i].posX,lines[i].posY);
+            SDL_RenderDrawLine(RenderInformation,lines[i-1].posX + offsetX,lines[i-1].posY + offsetY,lines[i].posX + offsetX,lines[i].posY + offsetY);
         }
     }
 
@@ -418,13 +676,12 @@ int main(int argc, char *argv[])
             break;
         }
 
-        //UpdateInputs(Event);
+        UpdateInputs(Event);
 
         Update();
 
-        //UpdatePreviousInputs(Event); //Updates previousinputs, used for keyUp and keyDown functions
+        UpdatePreviousInputs(Event); //Updates previousinputs, used for keyUp and keyDown functions
 
-        //PhysicsEngine();
         //fps limiter
         Sleep(std::max(0.0,(1000 / fpsLimiter) - (deltaTime * 1000)));
 
@@ -445,15 +702,71 @@ void QuitApplication(){
     endApp = true;
 }
 
+int iterationCount = 4;
+int lsysIndex = 0;
+
+std::vector<Transformation> lines;
 void Start()
 {
-    //RenderFrame(DrawIterationBinaryTree(&binaryTree,7));
-    RenderFrame(DrawIteration(&peanoCurve,5));
+    lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
+    RenderFrame(lines);
 }
 
 void Update()
 {
+    if(GetActionDownByName("Left"))
+    {
+        lsysIndex = (lsysIndex + lsysVec.size() - 1) % lsysVec.size();
+        iterationCount = 3;
+        lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
+        offsetX, offsetY = 0;
+        RenderFrame(lines);
+    }
+    else if(GetActionDownByName("Right"))
+    {
+        lsysIndex = (lsysIndex + 1) % lsysVec.size();
+        iterationCount = 3;
+        lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
+        offsetX, offsetY = 0;
+        RenderFrame(lines);
+    }
+    else if(GetActionDownByName("Up"))
+    {
+        iterationCount++;
+        lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
+        RenderFrame(lines);
+    }
+    else if(GetActionDownByName("Down"))
+    {
+        if(iterationCount > 1)
+        {
+            iterationCount--;
+            lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
+            RenderFrame(lines);
+        }
+    }
 
+    if(GetActionByName("Up2"))
+    {
+        offsetY += offsetSpeed * deltaTime;
+        RenderFrame(lines);
+    }
+    else if(GetActionByName("Down2"))
+    {
+        offsetY -= offsetSpeed * deltaTime;
+        RenderFrame(lines);
+    }
+
+    if(GetActionByName("Left2"))
+    {
+        offsetX += offsetSpeed * deltaTime;
+        RenderFrame(lines);
+    }
+    else if(GetActionByName("Right2"))
+    {
+        offsetX -= offsetSpeed * deltaTime;
+        RenderFrame(lines);
+    }
 }
 
 #endif
