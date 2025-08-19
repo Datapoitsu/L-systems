@@ -32,6 +32,7 @@ const double PI = 3.141592653589793;
 
 struct Lsystem
 {
+    std::string name;
     float moveChange;
     float angleChange;
     std::string row;
