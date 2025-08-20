@@ -574,14 +574,14 @@ std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
             case '+':
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle -= PI / 180.0f * lsys->angleChange;
+                t.angle = std::fmod(t.angle + PI * 2 - PI / 180.0f * lsys->angleChange, PI * 2);
                 transformations.push_back(t);
                 break;
             }
             case '-':
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle += PI / 180.0f * lsys->angleChange;
+                t.angle = std::fmod(t.angle + PI / 180.0f * lsys->angleChange,PI * 2);
                 transformations.push_back(t);
                 break;
             }
@@ -617,7 +617,12 @@ void closeWindow()
     SDL_Quit();
 }
 
-float offsetX, offsetY = 0;
+
+int iterationCount = 4;
+int lsysIndex = 0;
+float offsetX = 0;
+float offsetY = 0;
+float zoom = 1;
 float offsetSpeed = 50.0f;
 
 void RenderFrame(std::vector<Transformation> lines)
@@ -631,12 +636,14 @@ void RenderFrame(std::vector<Transformation> lines)
     {
         if(lines[i].draw)
         {
-            SDL_RenderDrawLine(RenderInformation,lines[i-1].posX + offsetX,lines[i-1].posY + offsetY,lines[i].posX + offsetX,lines[i].posY + offsetY);
+            SDL_RenderDrawLine(RenderInformation,(lines[i-1].posX + offsetX) * zoom,(lines[i-1].posY + offsetY) * zoom,(lines[i].posX + offsetX) * zoom,(lines[i].posY + offsetY) * zoom);
         }
     }
 
     SDL_RenderPresent(RenderInformation);
 }
+
+std::vector<Transformation> lines;
 
 // ----- Time ----- //
 double deltaTime;
@@ -644,6 +651,13 @@ timeval t1, t2; //Time at start and end of the frame
 double elapsedTime;
 double sessionTime = 0; //Total time the session has been on.
 int fpsLimiter = 60;
+
+void Restart()
+{
+    offsetX = 0;
+    offsetY = 0;
+    zoom = 1;
+}
 
 int main(int argc, char *argv[])
 {
@@ -663,13 +677,33 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        //Ending application.
         SDL_Event Event;
         if (SDL_PollEvent(&Event))
         {
-            if (SDL_QUIT == Event.type)
+            if (Event.type == SDL_QUIT) //Ending application.
             {
                 endApp = true;
+            }
+            if(Event.type == SDL_MOUSEMOTION)
+            {
+                if(Event.button.button == 1)
+                {
+                    if(Event.motion.xrel != 0 || Event.motion.yrel != 0)
+                    {
+                        offsetX += Event.motion.xrel / zoom;
+                        offsetY += Event.motion.yrel / zoom;
+                        RenderFrame(lines);
+                    }
+                }                
+            }
+            if(Event.type == SDL_MOUSEWHEEL)
+            {
+                zoom += Event.wheel.y * 0.1;
+                if(zoom <= 0)
+                {
+                    zoom = 0.1f;
+                }
+                RenderFrame(lines);
             }
         }
         if(endApp)
@@ -703,10 +737,6 @@ void QuitApplication(){
     endApp = true;
 }
 
-int iterationCount = 4;
-int lsysIndex = 0;
-
-std::vector<Transformation> lines;
 void Start()
 {
     lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
@@ -720,7 +750,7 @@ void Update()
         lsysIndex = (lsysIndex + lsysVec.size() - 1) % lsysVec.size();
         iterationCount = 3;
         lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
-        offsetX, offsetY = 0;
+        Restart();
         RenderFrame(lines);
     }
     else if(GetActionDownByName("Right"))
@@ -728,7 +758,7 @@ void Update()
         lsysIndex = (lsysIndex + 1) % lsysVec.size();
         iterationCount = 3;
         lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
-        offsetX, offsetY = 0;
+        Restart();
         RenderFrame(lines);
     }
     else if(GetActionDownByName("Up"))
