@@ -3,6 +3,7 @@
 
 //Windows libraries.
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
@@ -38,469 +39,73 @@ struct Lsystem
     std::string row;
     std::map<char, std::string> rules;
     std::map<char, std::string> actionMap;
+
+    void PrintData()
+    {
+        std::cout << "# ----- " << name << " ----- #" << std::endl;
+        std::cout << "Move amount: " << moveChange << std::endl;
+        std::cout << "Angle amount: " << angleChange << std::endl;
+        std::cout << "Axiom: " << row << std::endl;
+        std::cout << "Rules: " << std::endl;
+        for(auto i: rules)
+        {
+            std::cout << "\t" << i.first << ": " << i.second << std::endl;
+        }
+        std::cout << "Action map: " << std::endl;
+        for(auto i: actionMap)
+        {
+            std::cout << "\t" << i.first << ": " << i.second << std::endl;
+        }
+    }
 };
 
-std::vector<Lsystem> lsysVec
+std::vector<Lsystem> lsysVec;
+
+void LoadData(std::string path, std::vector<Lsystem> *lsysVec)
 {
+    std::string rowText;
+    std::ifstream MyReadFile(path);
+    while (std::getline (MyReadFile, rowText))
     {
-        "binaryTree",
-        5.0f,
-        45.0f,
-        "0",
-        {
-            {'0',"1[0]0"},
-            {'1',"11"}
-        },
-        {
-            {'0',"F"},
-            {'1',"F"},
-            {'[',"S-"},
-            {']',"R+"},
-        }
-    },
-    {
-        "quadraticType1Curve",
-        25.0f,
-        90.0f,
-        "F",
-        {
-            {'F',"F+F-F-F+F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "kochSnowflake",
-        1.0f,
-        60.0f,
-        "F--F--F",
-        {
-            {'F',"F+F--F+F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "iceFractal",
-        5.0f,
-        90.0f,
-        "F+F+F+F",
-        {
-            {'F',"FF+F++F+F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-        }
-    },
-    {
-        "gosperCurve",
-        5.0f,
-        60.0f,
-        "XF",
-        {
-            {'X',"X+YF++YF-FX--FXFX-YF+"},
-            {'Y',"-FX+YFYF++YF+FX--FX-Y"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "peanoCurve",
-        5.0f,
-        90.0f,
-        "X",
-        {
-            {'X',"XFYFX+F+YFXFY-F-XFYFX"},
-            {'Y',"YFXFY-F-XFYFX+F+YFXFY"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "peanoCurve2",
-        5.0f,
-        90.0f,
-        "F",
-        {
-            {'F',"F+F-F-FF-F-F-FF"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "hilbertCurve",
-        25.0f,
-        90.0f,
-        "A",
-        {
-            {'A',"+BF-AFA-FB+"},
-            {'B',"-AF+BFB+FA-"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "sierpinskiCurve",
-        5.0f,
-        45.0f,
-        "F--XF--F--XF",
-        {
-            {'X',"XF+G+XF--F--XF+G+X"},
-        },
-        {
-            {'F',"F"},
-            {'G',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "sierpinskiCurve2",
-        5.0f,
-        90.0f,
-        "F+XF+F+XF",
-        {
-            {'X',"XF-F+F-XF+F+XF-F+F-X"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "sierpinskiArrowheadCurve",
-        5.0f,
-        60.0f,
-        "XF",
-        {
-            {'X',"YF+XF+Y"},
-            {'Y',"XF-YF-X"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "sierpinskiTriangle",
-        25.0f,
-        120.0f,
-        "F-G-G",
-        {
-            {'F',"F-G+F+G-F"},
-            {'G',"GG"}
-        },
-        {
-            {'F',"F"},
-            {'G',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "sierpinskiTriangleApprox",
-        10.0f,
-        60.0f,
-        "A",
-        {
-            {'A',"B-A-B"},
-            {'B',"A+B+A"}
-        },
-        {
-            {'A',"F"},
-            {'B',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "gilbertCurve",
-        10.0f,
-        90.0f,
-        "X",
-        {
-            {'X',"-YF+XFX+FY-"},
-            {'Y',"+XF-YFY-FX+"}
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "dragonCurve",
-        10.0f,
-        90.0f,
-        "F",
-        {
-            {'F',"F+G"},
-            {'G',"F-G"}
-        },
-        {
-            {'F',"F"},
-            {'G',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "levyCurve",
-        10.0f,
-        45.0f,
-        "F++F++F++F",
-        {
-            {'F',"-F++F-"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "pentaplexity",
-        5.0f,
-        36.0f,
-        "F++F++F++F++F",
-        {
-            {'F',"F++F++F+++++F-F++F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "pentigree",
-        5.0f,
-        72.0f,
-        "F-F-F-F-F",
-        {
-            {'F',"F-F++F+F-F-F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "fractalPlant",
-        4.0f,
-        25.0f,
-        "-X",
-        {
-            {'X',"F+[[X]-X]-F[-FX]+X"},
-            {'F',"FF"}
-        },
-        {
-            {'F',"F"},
-            {'[',"S"},
-            {']',"R"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "hex7b",
-        4.0f,
-        30.0f,
-        "X",
-        {
-            {'X',"-F++F-X-F--F+Y---F--F+Y+F++F-X+++F++F-X-F++F-X+++F--F+Y--"},
-            {'Y',"+F++F-X-F--F+Y+F--F+Y---F--F+Y---F++F-X+++F++F-X+++F--F+Y"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "doily",
-        5.0f,
-        30.0f,
-        "F--F--F--F--F--F",
-        {
-            {'F',"-F[--F--F]++F--F+"},
-        },
-        {
-            {'F',"F"},
-            {'[',"S"},
-            {']',"R"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "maze01",
-        5.0f,
-        120.0f,
-        "F+F+F",
-        {
-            {'F',"F+FF-F"},
-        },
-        {
-            {'F',"F"},
+        std::cout << "RowTEXT: " << rowText << std::endl;
+        Lsystem lsys = {};
+        char arr[rowText.length() + 1]; //char arr version of the string.
+        strcpy(arr, rowText.c_str());
 
-            {'+',"+"},
-            {'-',"-"},
+        char *tokenPtr = strtok(arr, ";");
+        lsys.name = tokenPtr;
+        tokenPtr = strtok(NULL, ";");
+        lsys.moveChange = std::stof(tokenPtr);
+        tokenPtr = strtok(NULL, ";");
+        lsys.angleChange = std::stof(tokenPtr);
+        tokenPtr = strtok(NULL, ";");
+        lsys.row = tokenPtr;
+
+        char *ruleToken = strtok(NULL, ";");
+        char *actionToken = strtok(NULL, ";");
+
+        char *rulePtr = strtok(ruleToken,",");
+        while(rulePtr != NULL)
+        {
+            char *rulePtr2 = strtok(NULL,",");
+            lsys.rules.insert(std::make_pair(*rulePtr,rulePtr2));
+            rulePtr = strtok(NULL,",");
         }
-    },
-    {
-        "sierpinskiCarpet",
-        4.0f,
-        90.0f,
-        "F",
+
+        if(actionToken != NULL)
         {
-            {'F',"FFF[+FFF+FFF+FFF]"},
-        },
-        {
-            {'F',"F"},
-            {'[',"S"},
-            {']',"R"},
-            {'+',"+"},
+            char *actionPtr = strtok(actionToken,",");
+            while(actionPtr != NULL)
+            {
+                char *actionPtr2 = strtok(NULL,",");
+                lsys.actionMap.insert(std::make_pair(*actionPtr,actionPtr2));
+                actionPtr = strtok(NULL,",");
+            }
         }
-    },
-    {
-        "Maze&Fractal1",
-        4.0f,
-        120.0f,
-        "X",
-        {
-            {'X',"FY+FYFY-FY"},
-            {'Y',"FX-FXFX+FX"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "Moore",
-        4.0f,
-        90.0f,
-        "X",
-        {
-            {'X',"FX+FX+FXFYFX+FXFY-FY-FY-"},
-            {'Y',"+FX+FX+FXFY-FYFXFY-FY-FY"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "Pentant",
-        4.0f,
-        72.0f,
-        "X-X-X-X-X",
-        {
-            {'X',"FX-FX-FX+FY+FY+FX-FX"},
-            {'Y',"FY+FY-FX-FX-FY+FY+FY"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "Pentl",
-        4.0f,
-        72.0f,
-        "F-F-F-F-F",
-        {
-            {'F',"F-F-F++F+F-F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "Tiling1",
-        4.0f,
-        60.0f,
-        "X",
-        {
-            {'X',"F-F-F+F+FX++F-F-F+F+FX--F-F-F+F+FX"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "ADH231a",
-        4.0f,
-        45.0f,
-        "F++++F",
-        {
-            {'F',"F+F+F++++F+F+F"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "ADH256a",
-        4.0f,
-        90.0f,
-        "F+F+F+F++F-F-F-F",
-        {
-            {'F',"F+F++F+FF"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-    {
-        "ADH258a",
-        4.0f,
-        60.0f,
-        "F++F++F+++F--F--F",
-        {
-            {'F',"FF++F++F++FFF"},
-        },
-        {
-            {'F',"F"},
-            {'+',"+"},
-            {'-',"-"},
-        }
-    },
-};
+
+        lsysVec->push_back(lsys);
+    }
+}
 
 struct Transformation
 {
@@ -534,11 +139,17 @@ std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string current
 std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
 {
     std::string row = Iteration(lsys, iterations);
-    std::string actionRow = "";
-    for(int i = 0; i < row.length(); i++)
-    {
-        actionRow.append(lsys->actionMap[row[i]]);
+    std::string actionRow;
+
+    for (char c : row) {
+        auto it = lsys->actionMap.find(c);
+        if (it != lsys->actionMap.end()) {
+            actionRow += it->second;
+        } else {
+            actionRow += c;           
+        }
     }
+
     std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth / 2, -PI / 2}};
     std::vector<Transformation> splits;
     for(int i = 0; i < actionRow.length(); i++)
@@ -587,7 +198,7 @@ std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
             }
             default:
             {
-                std::cout << "ERROR in Draw Iteration with symbol: " << actionRow[i] << std::endl;
+                std::cout << "ERROR in Draw Iteration with symbol: " << row[i] << std::endl;
                 break;
             }
         }
@@ -631,7 +242,6 @@ void RenderFrame(std::vector<Transformation> lines)
     SDL_SetRenderDrawColor(RenderInformation, backgroundColour[0], backgroundColour[1], backgroundColour[2], 255);
     SDL_RenderClear(RenderInformation); //Fills the screen with the background colour
     SDL_SetRenderDrawColor(RenderInformation,125,0,0,255);
-
     for(int i = 1; i < lines.size(); i++)
     {
         if(lines[i].draw)
@@ -739,6 +349,11 @@ void QuitApplication(){
 
 void Start()
 {
+    LoadData("data.txt", &lsysVec);
+    for(int i = 0; i < lsysVec.size(); i++)
+    {
+        lsysVec[i].PrintData();
+    }
     lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
     RenderFrame(lines);
 }
