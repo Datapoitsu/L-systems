@@ -16,7 +16,6 @@ dragonCurve;10.0;90.0;F;F,F+G,G,F-G;G,F
 levyCurve;10.0;45.0;F++F++F++F;F,-F++F-
 pentaplexity;5.0;36.0;F++F++F++F++F;F,F++F++F+++++F-F++F
 pentigree;5.0;72.0;F-F-F-F-F;F,F-F++F+F-F-F
-fractalPlant;4.0;25.0;-X;X,F+[[X]-X]-F[-FX]+X,F,FF;[,S,],R
 hex7b;4.0;30.0;X;X,-F++F-X-F--F+Y---F--F+Y+F++F-X+++F++F-X-F++F-X+++F--F+Y--,Y,+F++F-X-F--F+Y+F--F+Y---F--F+Y---F++F-X+++F++F-X+++F--F+Y;Y,X
 doily;5.0;30.0;F--F--F--F--F--F;F,-F[--F--F]++F--F+;[,S,],R
 maze01;5.0;120.0;F+F+F;F,F+FF-F
@@ -29,3 +28,9 @@ Tiling1;4.0;60.0;X;X,F-F-F+F+FX++F-F-F+F+FX--F-F-F+F+FX
 ADH231a;4.0;45.0;F++++F;F,F+F+F++++F+F+F
 ADH256a;4.0;90.0;F+F+F+F++F-F-F-F;F,F+F++F+FF
 ADH258a;4.0;60.0;F++F++F+++F--F--F;F,FF++F++F++FFF
+FractalPlantA;5.0;25.7;F;F,F[+F]F[-F]F;[,S,],R
+FractalPlantB;5.0;20;F;F,F[+F]F[-F][F];[,S,],R
+FractalPlantC;4.0;22.5;F;F,FF-[-F+F+F]+[+F-F-F];[,S,],R
+FractalPlantD;7.0;20.0;X;X,F[+X]F[-X]+X,F,FF;[,S,],R
+FractalPlantE;7.0;25.7;X;X,F[+X][-X]FX,F,FF;[,S,],R
+FractalPlantF;5.0;22.5;-X;X,F+[[X]-X]-F[-FX]+X,F,FF;[,S,],R
