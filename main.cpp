@@ -6,7 +6,6 @@
 #include <fstream>
 #include <stdlib.h>
 #include <time.h>
-#include <windows.h>
 #include <vector>
 #include <string>
 #include <map>
@@ -17,6 +16,21 @@
 
 //My library.
 #include <tools/input.h>
+
+#ifdef __linux__
+	#include <unistd.h>
+#endif
+#ifdef __MINGW32__
+	//for printf
+	#include <stdio.h>
+	// for sleep
+	#include <windows.h>
+
+	void usleep(int microseconds)
+	{
+		Sleep(microseconds / 1000);
+	}
+#endif
 
 SDL_Window *Window;
 SDL_Renderer *RenderInformation;
@@ -323,7 +337,7 @@ std::vector<Transformation> lines;
 
 // ----- Time ----- //
 double deltaTime;
-timeval t1, t2; //Time at start and end of the frame
+clock_t t1, t2; //Time at start and end of the frame
 double elapsedTime;
 double sessionTime = 0; //Total time the session has been on.
 int fpsLimiter = 60;
@@ -346,13 +360,15 @@ int main(int argc, char *argv[])
     }
     Start();
 
-    //Begining of calculating time.
-    mingw_gettimeofday(&t1, NULL); 
     
     std::cout << "Start completed succesfully" << std::endl;
 
     while (true)
     {
+        //Begining of calculating time.
+        t1 = clock();
+        //mingw_gettimeofday(&t1, NULL); 
+
         SDL_Event Event;
         if (SDL_PollEvent(&Event))
         {
@@ -393,16 +409,14 @@ int main(int argc, char *argv[])
 
         UpdatePreviousInputs(Event); //Updates previousinputs, used for keyUp and keyDown functions
 
-        //fps limiter
-        Sleep(std::max(0.0,(1000 / fpsLimiter) - (deltaTime * 1000)));
-
         //Calculating passing time.
-        mingw_gettimeofday(&t2, NULL);
-        elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;
-        elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;
-        deltaTime = elapsedTime / 1000;
-        t1 = t2;
+        //mingw_gettimeofday(&t2, NULL);
+        t2 = clock();
+        deltaTime = (double)(t2 - t1) / CLOCKS_PER_SEC;
         sessionTime += deltaTime;
+
+        //fps limiter
+        usleep(std::max(0.0,(1000000 / fpsLimiter) - (deltaTime * 1000000)));
     }
 
     closeWindow();
