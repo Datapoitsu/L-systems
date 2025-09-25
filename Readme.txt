@@ -7,25 +7,30 @@ Inputs:
     D = next pattern
     A = previous pattern
 
+Warning! The program doesn't contain any limits. Increasing iterations can quickly lead to lag or a crash.
+
 Dataformatting:
     Name;Forward distance;Angle change;Axiom,Rules,remapping
 
-Rules and remapping are shown in a format of a,bc where a is replaced with bc.
+Rules and remapping are shown in a format of a:bc where a is replaced with bc.
 If there is more rules than one, seperate them with a comma.
 
 Remapping values:
-    F = draw Forward
+    F = Draw forward
+    f = Forward without drawing
+    H = draw halfstep forward
+    h = halfstep forward without drawing
     X = do nothing
     + = Turn Right
     - = Turn Left
-    S = Split to left
-    R = return to last split
+    | = Turn 180 deg
+    [ = Push new state to stack -> "Split"
+    ] = Pop last state from the stack -> Come back to the splitted position.
 
-Usually [ symbol is used to show a split and turn,
-but in this program you have to tell them separaterly.
+Sometimes [ symbol is used to show a split and turn, in this program you have to tell them separaterly.
 
 Example:
-    binaryTree;5.0;45.0;0;0,1[0]0,1,11;0,F,1,F,[,S-,],R+
+    binaryTree;5.0;45.0;0;0:1[0]0,1:11;0:F,1:F,[:[-,]:]+
 
 Explination:
     Name binaryTree
@@ -38,5 +43,5 @@ Explination:
     Action map:
             0: F
             1: F
-            [: S-
-            ]: R+
+            [: [-
+            ]: ]+

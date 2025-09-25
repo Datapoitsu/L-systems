@@ -34,18 +34,19 @@ const double PI = 3.141592653589793;
 struct Lsystem
 {
     std::string name;
-    float moveChange;
-    float angleChange;
-    std::string row;
+    float moveDistance;
+    float turnAngle; //deg
+    float startAngle = 0.0f; //deg
+    std::string axiom;
     std::map<char, std::string> rules;
-    std::map<char, std::string> actionMap;
+    std::map<char, std::string> actionMap; //What symbols are replaced with what symbols.
 
     void PrintData()
     {
         std::cout << "# ----- " << name << " ----- #" << std::endl;
-        std::cout << "Move amount: " << moveChange << std::endl;
-        std::cout << "Angle amount: " << angleChange << std::endl;
-        std::cout << "Axiom: " << row << std::endl;
+        std::cout << "Move amount: " << moveDistance << std::endl;
+        std::cout << "Angle amount: " << turnAngle << std::endl;
+        std::cout << "Axiom: " << axiom << std::endl;
         std::cout << "Rules: " << std::endl;
         for(auto i: rules)
         {
@@ -67,39 +68,59 @@ void LoadData(std::string path, std::vector<Lsystem> *lsysVec)
     std::ifstream MyReadFile(path);
     while (std::getline (MyReadFile, rowText))
     {
-        std::cout << "RowTEXT: " << rowText << std::endl;
+        //std::cout << "RowTEXT: " << rowText << std::endl;
         Lsystem lsys = {};
         char arr[rowText.length() + 1]; //char arr version of the string.
         strcpy(arr, rowText.c_str());
 
         char *tokenPtr = strtok(arr, ";");
+        if(tokenPtr == NULL)
+        {
+            std::cout << "Error LoadData at row: " << rowText << std::endl;
+            continue;
+        }
         lsys.name = tokenPtr;
         tokenPtr = strtok(NULL, ";");
-        lsys.moveChange = std::stof(tokenPtr);
+        if(tokenPtr == NULL)
+        {
+            std::cout << "Error LoadData at row: " << rowText << std::endl;
+            continue;
+        }
+        lsys.moveDistance = std::stof(tokenPtr);
         tokenPtr = strtok(NULL, ";");
-        lsys.angleChange = std::stof(tokenPtr);
+        if(tokenPtr == NULL)
+        {
+            std::cout << "Error LoadData at row: " << rowText << std::endl;
+            continue;
+        }
+        lsys.turnAngle = std::stof(tokenPtr);
         tokenPtr = strtok(NULL, ";");
-        lsys.row = tokenPtr;
+        if(tokenPtr == NULL)
+        {
+            std::cout << "Error LoadData at row: " << rowText << std::endl;
+            continue;
+        }
+        lsys.axiom = tokenPtr;
 
         char *ruleToken = strtok(NULL, ";");
         char *actionToken = strtok(NULL, ";");
 
-        char *rulePtr = strtok(ruleToken,",");
+        char *rulePtr = strtok(ruleToken,":");
         while(rulePtr != NULL)
         {
             char *rulePtr2 = strtok(NULL,",");
             lsys.rules.insert(std::make_pair(*rulePtr,rulePtr2));
-            rulePtr = strtok(NULL,",");
+            rulePtr = strtok(NULL,":");
         }
 
         if(actionToken != NULL)
         {
-            char *actionPtr = strtok(actionToken,",");
+            char *actionPtr = strtok(actionToken,":");
             while(actionPtr != NULL)
             {
                 char *actionPtr2 = strtok(NULL,",");
                 lsys.actionMap.insert(std::make_pair(*actionPtr,actionPtr2));
-                actionPtr = strtok(NULL,",");
+                actionPtr = strtok(NULL,":");
             }
         }
 
@@ -117,7 +138,7 @@ std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string current
 {
     if(currentRow == "")
     {
-        currentRow = lsys->row;
+        currentRow = lsys->axiom;
     }
     std::string resultRow = "";
     for(int i = 0; i < currentRow.length(); i++)
@@ -138,67 +159,112 @@ std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string current
 
 std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
 {
-    std::string row = Iteration(lsys, iterations);
+    std::string axiom = Iteration(lsys, iterations);
     std::string actionRow;
 
-    for (char c : row) {
+    for (char c : axiom)
+    {
         auto it = lsys->actionMap.find(c);
-        if (it != lsys->actionMap.end()) {
-            actionRow += it->second;
-        } else {
-            actionRow += c;           
+        if (it != lsys->actionMap.end())
+        {
+            if(it->second != "X") //No point to do nothing!
+            {
+                actionRow += it->second;
+            }
+        }
+        else
+        {
+            if(c != 'X') //No point to do nothign!
+            {
+                actionRow += c;           
+            }
         }
     }
 
-    std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth / 2, -PI / 2}};
+    std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth / 2, (float)(-PI / 2.0 + lsys->startAngle / 180.0 * PI)}};
     std::vector<Transformation> splits;
     for(int i = 0; i < actionRow.length(); i++)
     {
         switch(actionRow[i])
         {
-            case 'X':
+            case 'X': //Do nothing!!!
             {
+                std::cout << "ERROR: Doing nothing!" << std::endl;
                 break;
             }
-            case 'F':
+            case 'F': //Move forward by line length drawing a line
             {
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.posX += cos(t.angle) * lsys->moveChange;
-                t.posY += sin(t.angle) * lsys->moveChange;
+                t.posX += cos(t.angle) * lsys->moveDistance;
+                t.posY += sin(t.angle) * lsys->moveDistance;
                 transformations.push_back(t);
                 break;
             }
-            case 'S':
+            case 'f': //Move forward without drawing a line.
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.posX += cos(t.angle) * lsys->moveDistance;
+                t.posY += sin(t.angle) * lsys->moveDistance;
+                t.draw = false;
+                transformations.push_back(t);
+                break;
+            }
+            case 'H': //Move forward by line length drawing a line
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.posX += cos(t.angle) * lsys->moveDistance / 2;
+                t.posY += sin(t.angle) * lsys->moveDistance / 2;
+                transformations.push_back(t);
+                break;
+            }
+            case 'h': //Move forward without drawing a line.
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.posX += cos(t.angle) * lsys->moveDistance / 2;
+                t.posY += sin(t.angle) * lsys->moveDistance / 2;
+                t.draw = false;
+                transformations.push_back(t);
+                break;
+            }
+            case '+': //Turn left by turning angle
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.angle = std::fmod(t.angle + PI * 2 - PI / 180.0f * lsys->turnAngle, PI * 2);
+                transformations.push_back(t);
+                break;
+            }
+            case '-': //Turn right by turning angle
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.angle = std::fmod(t.angle + PI / 180.0f * lsys->turnAngle,PI * 2);
+                transformations.push_back(t);
+                break;
+            }
+            case '|': //Turn 180 deg
+            {
+                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
+                t.angle = std::fmod(t.angle + PI ,PI * 2);
+                transformations.push_back(t);
+                break;
+            }
+            case '[': //Push new state to stack -> "Split"
             {
                 splits.push_back(transformations[transformations.size() - 1]);
                 Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
                 transformations.push_back(t);
                 break;
             }
-            case 'R':
+            case ']': //Pop last state from the stack -> Come back to the splitted position.
             {
                 Transformation t = {splits[splits.size() - 1].posX,splits[splits.size() - 1].posY,splits[splits.size() - 1].angle, false};
                 transformations.push_back(t);
                 splits.pop_back();
                 break;
             }
-            case '+':
-            {
-                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle = std::fmod(t.angle + PI * 2 - PI / 180.0f * lsys->angleChange, PI * 2);
-                transformations.push_back(t);
-                break;
-            }
-            case '-':
-            {
-                Transformation t = {transformations[transformations.size() - 1].posX,transformations[transformations.size() - 1].posY,transformations[transformations.size() - 1].angle};
-                t.angle = std::fmod(t.angle + PI / 180.0f * lsys->angleChange,PI * 2);
-                transformations.push_back(t);
-                break;
-            }
+
             default:
             {
-                std::cout << "ERROR in Draw Iteration with symbol: " << row[i] << std::endl;
+                std::cout << "ERROR in Draw Iteration with symbol: " << axiom[i] << std::endl;
                 break;
             }
         }
@@ -349,11 +415,12 @@ void QuitApplication(){
 
 void Start()
 {
-    LoadData("data.txt", &lsysVec);
-    for(int i = 0; i < lsysVec.size(); i++)
+    LoadData("Presets.txt", &lsysVec);
+    //Debug.
+    /*for(int i = 0; i < lsysVec.size(); i++)
     {
         lsysVec[i].PrintData();
-    }
+    }*/
     lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
     RenderFrame(lines);
 }
