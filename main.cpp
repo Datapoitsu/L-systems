@@ -157,6 +157,19 @@ std::string Iteration(Lsystem *lsys, int iterationRound = 1, std::string current
     return resultRow;
 }
 
+bool AllowedSymbols(char c)
+{
+    char symbolList[] = {'F','f','H','h','+','-','|','[',']'};
+    for(int i = 0; i < sizeof(symbolList); i++)
+    {
+        if(c == symbolList[i])
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
 {
     std::string axiom = Iteration(lsys, iterations);
@@ -169,12 +182,18 @@ std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
         {
             if(it->second != "X") //No point to do nothing!
             {
-                actionRow += it->second;
+                for(int i = 0; i < it->second.size(); i++)
+                {
+                    if(AllowedSymbols(it->second.at(i)))
+                    {
+                        actionRow += it->second.at(i);
+                    }
+                }
             }
         }
         else
         {
-            if(c != 'X') //No point to do nothign!
+            if(AllowedSymbols(c)) //Filters out symbols that do nothing.
             {
                 actionRow += c;           
             }
@@ -261,7 +280,6 @@ std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
                 splits.pop_back();
                 break;
             }
-
             default:
             {
                 std::cout << "ERROR in Draw Iteration with symbol: " << axiom[i] << std::endl;
