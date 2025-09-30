@@ -1,7 +1,7 @@
 #ifndef _ENGINEH_
 #define _ENGINEH_
 
-//Windows libraries.
+//C++ libraries
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -10,6 +10,7 @@
 #include <string>
 #include <map>
 #include <math.h>
+#include <unordered_map>
 
 //SDL2
 #include <SDL2/SDL.h>
@@ -34,8 +35,8 @@
 
 SDL_Window *Window;
 SDL_Renderer *RenderInformation;
-const int screenWidth = 1000;
-const int screenHeigth = 1000;
+int screenWidth = 1000;
+int screenHeigth = 500;
 int backgroundColour[3] = {125,125,125};
 
 //Function declaration
@@ -75,6 +76,47 @@ struct Lsystem
 };
 
 std::vector<Lsystem> lsysVec;
+
+void LoadSettings(std::string path)
+{
+    std::string rowText;
+    std::ifstream MyReadFile(path);
+    static std::unordered_map<std::string, int> commandMap = {
+        {"width", 1},
+        {"heigth", 2},
+    };
+    while (std::getline (MyReadFile, rowText))
+    {
+        Lsystem lsys = {};
+        char arr[rowText.length() + 1]; //char arr version of the string.
+        strcpy(arr, rowText.c_str());
+
+        char *targetptr = strtok(arr, ":");
+        if(targetptr == NULL)
+        {
+            std::cout << "Error LoadSettings at row: " << rowText << ". Missing targetptr!" << std::endl;
+            continue;
+        }
+        char *valueptr = strtok(NULL,":");
+        if(valueptr == NULL)
+        {
+            std::cout << "Error LoadSettings at row: " << rowText << ". Missing valueptr!" << std::endl;
+            continue;
+        }
+        
+        switch (commandMap[targetptr])
+        {
+            case 1: //Width
+                screenWidth = std::stoi(valueptr);
+                break;
+            case 2: //Height
+                screenHeigth = std::stoi(valueptr);
+                break;
+            default:
+                break;
+        }
+    }
+}
 
 void LoadData(std::string path, std::vector<Lsystem> *lsysVec)
 {
@@ -214,7 +256,7 @@ std::vector<Transformation> CalculateIteration(Lsystem *lsys, int iterations)
         }
     }
 
-    std::vector<Transformation> transformations = {{screenWidth / 2,screenHeigth / 2, (float)(-PI / 2.0 + lsys->startAngle / 180.0 * PI)}};
+    std::vector<Transformation> transformations = {{screenWidth / 2.0f, screenHeigth / 2.0f, (float)(-PI / 2.0 + lsys->startAngle / 180.0 * PI)}};
     std::vector<Transformation> splits;
     for(int i = 0; i < actionRow.length(); i++)
     {
@@ -340,11 +382,17 @@ void RenderFrame(std::vector<Transformation> lines)
     SDL_SetRenderDrawColor(RenderInformation, backgroundColour[0], backgroundColour[1], backgroundColour[2], 255);
     SDL_RenderClear(RenderInformation); //Fills the screen with the background colour
     SDL_SetRenderDrawColor(RenderInformation,125,0,0,255);
+    float zoomOffsetX = screenWidth - screenWidth / 2 * zoom;
+    float zoomOffsetY = screenHeigth - screenHeigth / 2 * zoom;
     for(int i = 1; i < lines.size(); i++)
     {
         if(lines[i].draw)
         {
-            SDL_RenderDrawLine(RenderInformation,(lines[i-1].posX + offsetX) * zoom,(lines[i-1].posY + offsetY) * zoom,(lines[i].posX + offsetX) * zoom,(lines[i].posY + offsetY) * zoom);
+            int x1 = lines[i-1].posX * zoom + zoomOffsetX  + offsetX * zoom - screenWidth / 2; //lines[i-1].posX * zoom + offsetX - screenWidth + screenWidth * zoom;
+            int y1 = lines[i-1].posY * zoom + zoomOffsetY  + offsetY * zoom - screenHeigth / 2;// * zoom + offsetY - screenHeigth + screenHeigth * zoom;
+            int x2 = lines[i].posX * zoom + zoomOffsetX + offsetX * zoom - screenWidth / 2;// * zoom + offsetX - screenWidth + screenWidth * zoom;
+            int y2 = lines[i].posY * zoom + zoomOffsetY + offsetY * zoom - screenHeigth / 2;// * zoom + offsetY - screenHeigth + screenHeigth * zoom;
+            SDL_RenderDrawLine(RenderInformation,x1,y1,x2,y2);
         }
     }
 
@@ -370,7 +418,7 @@ void Restart()
 int main(int argc, char *argv[])
 {
     srand(time(NULL));
-
+    LoadSettings("settings.config");
     std::cout << "Starting" << std::endl;
     if(createWindow() == false)
     {
@@ -448,11 +496,6 @@ void QuitApplication(){
 void Start()
 {
     LoadData("Presets.txt", &lsysVec);
-    //Debug.
-    /*for(int i = 0; i < lsysVec.size(); i++)
-    {
-        lsysVec[i].PrintData();
-    }*/
     lines = CalculateIteration(&lsysVec[lsysIndex],iterationCount);
     RenderFrame(lines);
 }

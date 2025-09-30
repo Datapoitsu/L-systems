@@ -14,7 +14,7 @@ windows: main.exe
 
 linux: main
 
-main.exe: src/include main.cpp
+main.exe: src/include/* main.cpp
 	g++ -I src/include -L src/lib -o main main.cpp -lmingw32 -lSDL2main -lSDL2 -lsdl2_image
 
 main: src/include main.cpp
